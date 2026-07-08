@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Diet AI Coach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .chat-container { height: calc(100vh - 140px); scroll-behavior: smooth; }
+        .message-bubble { max-width: 85%; word-wrap: break-word; }
+        
+        /* Markdown Styling */
+        .markdown-content p { margin-bottom: 0.75rem; }
+        .markdown-content p:last-child { margin-bottom: 0; }
+        .markdown-content ul { list-style-type: disc; margin-left: 1.25rem; margin-bottom: 0.75rem; }
+        .markdown-content ol { list-style-type: decimal; margin-left: 1.25rem; margin-bottom: 0.75rem; }
+        .markdown-content li { margin-bottom: 0.25rem; }
+        .markdown-content strong { font-weight: 700; color: #111827; }
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 { font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; color: #111827; }
+        .markdown-content code { background-color: #f3f4f6; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-family: monospace; font-size: 0.875rem; }
+
+        /* Typing animation */
+        .typing-indicator span {
+            animation: blink 1.4s infinite both;
+            height: 6px; width: 6px; background: #9ca3af;
+            border-radius: 50%; display: inline-block; margin: 0 1px;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+        
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
+</head>
+<body class="bg-gray-50 flex flex-col h-screen overflow-hidden text-sm sm:text-base">
+
+    <!-- Header -->
+    <header class="bg-emerald-600 text-white p-4 flex justify-between items-center shadow-md z-10">
+        <div class="font-bold text-lg flex items-center gap-2">
+            <span>🥗</span> Diet Coach AI
+        </div>
+        <button onclick="toggleSettings()" class="p-2 bg-emerald-700 rounded-lg hover:bg-emerald-800 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Chat Area -->
+    <main id="chat-box" class="chat-container flex-1 p-4 overflow-y-auto flex flex-col gap-4">
+        <div class="flex flex-col items-start">
+            <div class="message-bubble bg-white text-gray-800 p-3 rounded-2xl rounded-tl-none shadow-sm border border-gray-200">
+                Hello! I'm your AI Diet Coach. Tell me what you're eating today or upload a photo of your meal, and I'll help you stay on track with your weight-loss goals!
+            </div>
+        </div>
+    </main>
+
+    <!-- Input Area -->
+    <footer class="bg-white p-3 border-t border-gray-200 pb-safe">
+        <div id="image-preview-container" class="hidden mb-2 relative inline-block">
+            <img id="image-preview" class="h-20 w-20 object-cover rounded-lg border border-emerald-300" src="" alt="Preview">
+            <button onclick="clearImage()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">X</button>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <label for="camera-upload" class="p-2 text-emerald-600 bg-emerald-50 rounded-full cursor-pointer hover:bg-emerald-100 transition flex-shrink-0" title="Take a Photo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
+                  <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                </svg>
+            </label>
+            <input type="file" id="camera-upload" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelection(event)">
+            
+            <label for="gallery-upload" class="p-2 text-emerald-600 bg-emerald-50 rounded-full cursor-pointer hover:bg-emerald-100 transition flex-shrink-0" title="Upload from Gallery">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+                  <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2zM14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1zM2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1h-10z"/>
+                </svg>
+            </label>
+            <input type="file" id="gallery-upload" accept="image/*" class="hidden" onchange="handleImageSelection(event)">
+
+            <input type="text" id="user-input" class="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" placeholder="Describe your meal..." onkeypress="handleKeyPress(event)">
+            
+            <button onclick="sendMessage()" class="p-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition flex-shrink-0 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M15.854.146a.5.5 0 0 0-.11-.11.5.5 0 0 0-.616.035L.146 5.854a.5.5 0 0 0-.11.616l2.5 5a.5.5 0 0 0 .616.11l5-2.5 2.5 5a.5.5 0 0 0 .616.11l5-2.5a.5.5 0 0 0 .035-.616zM1.464 6.036 14.536 1.464 9.964 14.536 7.786 10.17 5.83 12.13a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708L5.586 7.96 1.464 6.036z"/>
+                </svg>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-end sm:items-center z-50">
+        <div class="bg-white w-full sm:w-96 rounded-t-2xl sm:rounded-2xl p-6 transform transition-transform overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">AI Configuration</h2>
+                <button onclick="toggleSettings()" class="text-gray-500 hover:text-gray-800 font-bold text-xl">&times;</button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">API Key</label>
+                    <div class="relative">
+                        <input type="password" id="cfg-apikey" class="w-full border border-gray-300 rounded-lg pl-3 pr-10 py-2 text-sm focus:outline-none focus:border-emerald-500" placeholder="sk-...">
+                        <button type="button" onclick="toggleApiKeyVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-emerald-600 transition">
+                            <svg id="icon-eye-closed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 block">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                            </svg>
+                            <svg id="icon-eye-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 hidden">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Base URL / Proxy</label>
+                    <input type="text" id="cfg-baseurl" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" value="https://zaccadream.com/proxy.php?target=https://opencode.ai/zen/v1">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Model Name</label>
+                    <input type="text" id="cfg-model" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" value="nemotron-3-ultra-free">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">System Prompt</label>
+                    <textarea id="cfg-system" rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 resize-none">You are an expert nutritionist and supportive diet coach. Your goal is to help the user lose weight safely. Analyze the meals they describe or show via photos. Estimate nutritional value, provide constructive feedback, and offer actionable advice to maintain a healthy caloric deficit.</textarea>
+                </div>
+
+                <div class="flex items-center justify-between py-2 border-t border-gray-100">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Enable Streaming</label>
+                        <p class="text-xs text-gray-500">Disable if responses fail to load.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="cfg-stream" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+
+                <button onclick="saveSettings()" class="w-full bg-emerald-600 text-white rounded-lg py-2 font-bold hover:bg-emerald-700 transition">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        let chatHistory = [];
+        let currentImageBase64 = null;
+
+        // Configuration with new stream toggle (defaulting to false)
+        let config = {
+            apiKey: localStorage.getItem('diet_apiKey') || "",
+            baseUrl: localStorage.getItem('diet_baseUrl') || "https://zaccadream.com/proxy.php?target=https://opencode.ai/zen/v1",
+            model: localStorage.getItem('diet_model') || "nemotron-3-ultra-free",
+            systemPrompt: localStorage.getItem('diet_systemPrompt') || "You are an expert nutritionist and supportive diet coach. Your goal is to help the user lose weight safely. Analyze the meals they describe or show via photos. Estimate nutritional value, provide constructive feedback, and offer actionable advice to maintain a healthy caloric deficit.",
+            stream: localStorage.getItem('diet_stream') === 'true'
+        };
+
+        marked.setOptions({ breaks: true, gfm: true });
+
+        // Initialize UI with saved configuration
+        document.getElementById('cfg-apikey').value = config.apiKey;
+        document.getElementById('cfg-baseurl').value = config.baseUrl;
+        document.getElementById('cfg-model').value = config.model;
+        document.getElementById('cfg-system').value = config.systemPrompt;
+        document.getElementById('cfg-stream').checked = config.stream;
+
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('cfg-apikey');
+            const eyeClosed = document.getElementById('icon-eye-closed');
+            const eyeOpen = document.getElementById('icon-eye-open');
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeClosed.classList.replace('block', 'hidden');
+                eyeOpen.classList.replace('hidden', 'block');
+            } else {
+                input.type = 'password';
+                eyeClosed.classList.replace('hidden', 'block');
+                eyeOpen.classList.replace('block', 'hidden');
+            }
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.replace('hidden', 'flex');
+            } else {
+                modal.classList.replace('flex', 'hidden');
+                document.getElementById('cfg-apikey').type = 'password';
+                document.getElementById('icon-eye-closed').classList.replace('hidden', 'block');
+                document.getElementById('icon-eye-open').classList.replace('block', 'hidden');
+            }
+        }
+
+        function saveSettings() {
+            config.apiKey = document.getElementById('cfg-apikey').value.trim();
+            config.baseUrl = document.getElementById('cfg-baseurl').value.trim();
+            config.model = document.getElementById('cfg-model').value.trim();
+            config.systemPrompt = document.getElementById('cfg-system').value.trim();
+            config.stream = document.getElementById('cfg-stream').checked;
+
+            localStorage.setItem('diet_apiKey', config.apiKey);
+            localStorage.setItem('diet_baseUrl', config.baseUrl);
+            localStorage.setItem('diet_model', config.model);
+            localStorage.setItem('diet_systemPrompt', config.systemPrompt);
+            localStorage.setItem('diet_stream', config.stream);
+            
+            toggleSettings();
+            appendMessage("system", "Settings updated successfully. Streaming is now " + (config.stream ? "ON" : "OFF") + ".");
+        }
+
+        function handleImageSelection(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImageBase64 = e.target.result;
+                document.getElementById('image-preview').src = currentImageBase64;
+                document.getElementById('image-preview-container').classList.remove('hidden');
+                document.getElementById('camera-upload').value = "";
+                document.getElementById('gallery-upload').value = "";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage() {
+            currentImageBase64 = null;
+            document.getElementById('camera-upload').value = "";
+            document.getElementById('gallery-upload').value = "";
+            document.getElementById('image-preview-container').classList.add('hidden');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function scrollToBottom() {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function appendMessage(role, text, imageUrl = null) {
+            const chatBox = document.getElementById('chat-box');
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex flex-col ${role === 'user' ? 'items-end' : 'items-start'}`;
+            
+            let bubbleClass = role === 'user' ? "bg-emerald-600 text-white rounded-2xl rounded-tr-none" 
+                            : role === 'system' ? "bg-gray-200 text-gray-600 text-xs text-center mx-auto rounded-full"
+                            : "bg-white text-gray-800 rounded-2xl rounded-tl-none border border-gray-200";
+
+            let innerHtml = `<div class="message-bubble p-3 shadow-sm ${bubbleClass}">`;
+
+            if (imageUrl) {
+                innerHtml += `<img src="${imageUrl}" class="w-full max-w-[200px] rounded-lg mb-2 object-cover border ${role === 'user' ? 'border-emerald-500' : 'border-gray-200'}">`;
+            }
+            if (text) {
+                if (role === 'assistant') {
+                    innerHtml += `<div class="markdown-content">${marked.parse(text)}</div>`;
+                } else if (role === 'user') {
+                    innerHtml += `<div>${text.replace(/\n/g, '<br>')}</div>`;
+                } else {
+                    innerHtml += `<div>${text}</div>`;
+                }
+            }
+            
+            innerHtml += `</div>`;
+            wrapper.innerHTML = innerHtml;
+            chatBox.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            const chatBox = document.getElementById('chat-box');
+            const wrapper = document.createElement('div');
+            wrapper.id = 'typing-indicator';
+            wrapper.className = `flex flex-col items-start`;
+            wrapper.innerHTML = `
+                <div class="message-bubble bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-200 flex items-center">
+                    <div class="typing-indicator"><span></span><span></span><span></span></div>
+                </div>
+            `;
+            chatBox.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+        }
+
+        function createAssistantStreamBubble() {
+            const chatBox = document.getElementById('chat-box');
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex flex-col items-start`;
+            const bubble = document.createElement('div');
+            bubble.className = "message-bubble p-3 shadow-sm bg-white text-gray-800 rounded-2xl rounded-tl-none border border-gray-200 markdown-content";
+            wrapper.appendChild(bubble);
+            chatBox.appendChild(wrapper);
+            scrollToBottom();
+            return bubble;
+        }
+
+        async function sendMessage() {
+            const inputField = document.getElementById('user-input');
+            const text = inputField.value.trim();
+            const imgBase64 = currentImageBase64;
+
+            if (!text && !imgBase64) return;
+            if (!config.apiKey) {
+                toggleSettings();
+                alert("Please enter your API Key first.");
+                return;
+            }
+
+            appendMessage('user', text, imgBase64);
+            inputField.value = "";
+            clearImage();
+
+            let apiMessageContent;
+            if (imgBase64) {
+                apiMessageContent = [];
+                if (text) apiMessageContent.push({ type: "text", text: text });
+                else apiMessageContent.push({ type: "text", text: "Please analyze this meal." });
+                apiMessageContent.push({ type: "image_url", image_url: { url: imgBase64 } });
+            } else {
+                apiMessageContent = text;
+            }
+
+            const userMessage = { role: "user", content: apiMessageContent };
+            chatHistory.push(userMessage);
+            showTypingIndicator();
+
+            try {
+                let endpoint = config.baseUrl;
+                if (!endpoint.endsWith('/chat/completions')) {
+                    endpoint = endpoint.replace(/\/+$/, "") + "/chat/completions";
+                }
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: config.model,
+                        messages: [{ role: "system", content: config.systemPrompt }, ...chatHistory],
+                        temperature: 0.7,
+                        stream: config.stream // Uses the toggle setting
+                    })
+                });
+
+                if (!response.ok) {
+                    removeTypingIndicator();
+                    const errorText = await response.text();
+                    throw new Error(`HTTP Error ${response.status}: ${errorText}`);
+                }
+
+                if (config.stream) {
+                    // Streaming Logic
+                    removeTypingIndicator();
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let accumulatedText = "";
+                    const bubble = createAssistantStreamBubble();
+
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n');
+
+                        for (const line of lines) {
+                            if (line.trim() === '' || line.startsWith(':')) continue;
+                            if (line.startsWith('data: ')) {
+                                const dataStr = line.substring(6).trim();
+                                if (dataStr === '[DONE]') break;
+                                
+                                try {
+                                    const dataObj = JSON.parse(dataStr);
+                                    const deltaContent = dataObj.choices[0]?.delta?.content;
+                                    if (deltaContent) {
+                                        accumulatedText += deltaContent;
+                                        bubble.innerHTML = marked.parse(accumulatedText);
+                                        scrollToBottom();
+                                    }
+                                } catch (e) {
+                                    console.warn("Stream chunk parsing error:", e, line);
+                                }
+                            }
+                        }
+                    }
+                    chatHistory.push({ role: "assistant", content: accumulatedText });
+
+                } else {
+                    // Standard (Non-Streaming) Logic
+                    const data = await response.json();
+                    const assistantMessage = data.choices[0].message;
+                    
+                    removeTypingIndicator();
+                    appendMessage('assistant', assistantMessage.content);
+                    chatHistory.push({ role: "assistant", content: assistantMessage.content });
+                }
+
+            } catch (error) {
+                removeTypingIndicator();
+                appendMessage('system', `Error: ${error.message}. Check your API Key, Proxy, or Model name in settings.`);
+                chatHistory.pop();
+            }
+        }
+    </script>
+</body>
+</html>
