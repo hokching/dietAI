@@ -8,7 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .chat-container { height: calc(100vh - 140px); scroll-behavior: smooth; }
+        /* FIX: Removed the rigid height calculation. Flexbox will now handle this dynamically. */
+        .chat-container { scroll-behavior: smooth; }
         .message-bubble { max-width: 85%; word-wrap: break-word; }
         
         /* Markdown Styling */
@@ -34,9 +35,8 @@
         ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
-<body class="bg-gray-50 flex flex-col h-screen overflow-hidden text-sm sm:text-base">
+<body class="bg-gray-50 flex flex-col h-[100dvh] overflow-hidden text-sm sm:text-base">
 
-    <!-- Header -->
     <header class="bg-emerald-600 text-white p-4 flex justify-between items-center shadow-md z-10">
         <div class="font-bold text-lg flex items-center gap-2">
             <span>🥗</span> Diet Coach AI
@@ -49,7 +49,6 @@
         </button>
     </header>
 
-    <!-- Chat Area -->
     <main id="chat-box" class="chat-container flex-1 p-4 overflow-y-auto flex flex-col gap-4">
         <div class="flex flex-col items-start">
             <div class="message-bubble bg-white text-gray-800 p-3 rounded-2xl rounded-tl-none shadow-sm border border-gray-200">
@@ -58,7 +57,6 @@
         </div>
     </main>
 
-    <!-- Input Area -->
     <footer class="bg-white p-3 border-t border-gray-200 pb-safe">
         <div id="image-preview-container" class="hidden mb-2 relative inline-block">
             <img id="image-preview" class="h-20 w-20 object-cover rounded-lg border border-emerald-300" src="" alt="Preview">
@@ -92,7 +90,6 @@
         </div>
     </footer>
 
-    <!-- Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-end sm:items-center z-50">
         <div class="bg-white w-full sm:w-96 rounded-t-2xl sm:rounded-2xl p-6 transform transition-transform overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-4">
@@ -148,12 +145,10 @@
         </div>
     </div>
 
-    <!-- Application Logic -->
     <script>
         let chatHistory = [];
         let currentImageBase64 = null;
 
-        // Configuration with new stream toggle (defaulting to false)
         let config = {
             apiKey: localStorage.getItem('diet_apiKey') || "",
             baseUrl: localStorage.getItem('diet_baseUrl') || "https://zaccadream.com/proxy.php?target=https://opencode.ai/zen/v1",
@@ -164,7 +159,6 @@
 
         marked.setOptions({ breaks: true, gfm: true });
 
-        // Initialize UI with saved configuration
         document.getElementById('cfg-apikey').value = config.apiKey;
         document.getElementById('cfg-baseurl').value = config.baseUrl;
         document.getElementById('cfg-model').value = config.model;
@@ -355,7 +349,7 @@
                         model: config.model,
                         messages: [{ role: "system", content: config.systemPrompt }, ...chatHistory],
                         temperature: 0.7,
-                        stream: config.stream // Uses the toggle setting
+                        stream: config.stream
                     })
                 });
 
@@ -366,7 +360,6 @@
                 }
 
                 if (config.stream) {
-                    // Streaming Logic
                     removeTypingIndicator();
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder("utf-8");
@@ -403,7 +396,6 @@
                     chatHistory.push({ role: "assistant", content: accumulatedText });
 
                 } else {
-                    // Standard (Non-Streaming) Logic
                     const data = await response.json();
                     const assistantMessage = data.choices[0].message;
                     
