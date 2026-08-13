@@ -116,12 +116,12 @@
                 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Base URL / Proxy</label>
-                    <input type="text" id="cfg-baseurl" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" value="https://zaccadream.com/proxy.php?target=https://opencode.ai/zen/v1">
+                    <input type="text" id="cfg-baseurl" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
                 </div>
                 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Model Name</label>
-                    <input type="text" id="cfg-model" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" value="nemotron-3-ultra-free">
+                    <input type="text" id="cfg-model" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" value="nemo-3-ultra-free">
                 </div>
                 
                 <div>
@@ -151,8 +151,8 @@
 
         let config = {
             apiKey: localStorage.getItem('diet_apiKey') || "",
-            baseUrl: localStorage.getItem('diet_baseUrl') || "https://zaccadream.com/proxy.php?target=https://opencode.ai/zen/v1",
-            model: localStorage.getItem('diet_model') || "nemotron-3-ultra-free",
+            baseUrl: localStorage.getItem('diet_baseUrl') || "https://zaccadream.com/corsproxy.php?target=https://opencode.ai/zen/v1",
+            model: localStorage.getItem('diet_model') || "deepseek-v4-flash-free",
             systemPrompt: localStorage.getItem('diet_systemPrompt') || "You are an expert nutritionist and supportive diet coach. Your goal is to help the user lose weight safely. Analyze the meals they describe or show via photos. Estimate nutritional value, provide constructive feedback, and offer actionable advice to maintain a healthy caloric deficit.",
             stream: localStorage.getItem('diet_stream') === 'true'
         };
