@@ -150,9 +150,9 @@
         let currentImageBase64 = null;
 
         let config = {
-            apiKey: localStorage.getItem('diet_apiKey') || "",
-            baseUrl: localStorage.getItem('diet_baseUrl') || "https://zaccadream.com/corsproxy.php?target=https://opencode.ai/zen/v1",
-            model: localStorage.getItem('diet_model') || "deepseek-v4-flash-free",
+            apiKey: "sk-ca8wB7blsrp1Bxpmd1PlcPfcpX3cRhKfV96Li7sQbt28VulDbkubEmXfwcNE5BjD", //localStorage.getItem('diet_apiKey') || "",
+            baseUrl: "https://zaccadream.com/corsproxy.php?target=https://opencode.ai/zen/v1",//localStorage.getItem('diet_baseUrl') || "https://zaccadream.com/corsproxy.php?target=https://opencode.ai/zen/v1",
+            model: "mimo-v2.5-free", //localStorage.getItem('diet_model') || "deepseek-v4-flash-free",
             systemPrompt: localStorage.getItem('diet_systemPrompt') || "You are an expert nutritionist and supportive diet coach. Your goal is to help the user lose weight safely. Analyze the meals they describe or show via photos. Estimate nutritional value, provide constructive feedback, and offer actionable advice to maintain a healthy caloric deficit.",
             stream: localStorage.getItem('diet_stream') === 'true'
         };
