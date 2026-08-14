@@ -149,10 +149,10 @@
         let chatHistory = [];
         let currentImageBase64 = null;
 
-        let config = {
-            apiKey: "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", //localStorage.getItem('diet_apiKey') || "",
-            baseUrl: "https://openrouter.ai/api/v1",//localStorage.getItem('diet_baseUrl') || "https://zaccadream.com/corsproxy.php?target=https://opencode.ai/zen/v1",
-            model: "openrouter/free", //localStorage.getItem('diet_model') || "deepseek-v4-flash-free",
+        let config = {            
+            apiKey: "spw7RLNAOzyuUCzcMGRyr9bQRTcKiG08", //localStorage.getItem('diet_apiKey') || "",
+            baseUrl: "https://api.mistral.ai/v1",//localStorage.getItem('diet_baseUrl') || "https://zaccadream.com/corsproxy.php?target=https://opencode.ai/zen/v1",
+            model: "mistral-large-latest", //localStorage.getItem('diet_model') || "deepseek-v4-flash-free",
             systemPrompt: localStorage.getItem('diet_systemPrompt') || "You are an expert nutritionist and supportive diet coach. Your goal is to help the user lose weight safely. Analyze the meals they describe or show via photos. Estimate nutritional value, provide constructive feedback, and offer actionable advice to maintain a healthy caloric deficit.",
             stream: true //localStorage.getItem('diet_stream') === 'true'
         };
